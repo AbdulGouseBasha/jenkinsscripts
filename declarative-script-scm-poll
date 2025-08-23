@@ -1,0 +1,26 @@
+pipeline {
+    agent { label 'agent01' }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git credentialsId: 'abdulgousebasha', branch: 'master', url: 'https://github.com/AbdulGouseBasha/my-app.git/'
+            }
+        }
+        stage('Verify Checkout') {
+            steps {
+                sh 'ls -la'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo "test stage done"
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo "deployement stage done"
+            }
+        }
+    }
+}
