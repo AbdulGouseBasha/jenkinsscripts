@@ -2,7 +2,8 @@ pipeline {
     agent { label 'agent-delphi-node' }  // Replace with your agent label
 
     environment {
-        MSBUILD = '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin\\MSBuild.exe"'  // Adjust path as needed
+        //MSBUILD = '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin\\MSBuild.exe"'  // Adjust path as needed
+         RS_VARS = '"C:\\Program Files (x86)\\Embarcadero\\Studio\\22.0\\bin\\rsvars.bat"'
     }
 
     stages {
@@ -14,7 +15,9 @@ pipeline {
 
         stage('Build Delphi Project') {
             steps {
-                bat "${env.MSBUILD} Jenkins_Console_Test.dproj /p:Config=Release /p:Platform=Win32"
+                //bat "${env.MSBUILD} Jenkins_Console_Test.dproj /p:Config=Release /p:Platform=Win32"
+                // Chain rsvars.bat and MSBuild together in one bat call
+                bat "${env.RS_VARS} && msbuild Jenkins_Console_Test.dproj /p:Config=Release /p:Platform=Win32"
             }
         }
 
