@@ -1,6 +1,11 @@
 pipeline {
     agent { label 'agent01' }
 
+    environment {
+        MAVEN_HOME = '/opt/maven'
+        PATH = "${env.MAVEN_HOME}/bin:${env.PATH}"
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
