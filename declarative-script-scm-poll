@@ -12,6 +12,17 @@ pipeline {
                 sh 'ls -la'
             }
         }
+        stage('Maven clean') {
+            steps {
+                sh 'mvn clean'
+            }
+        }
+        stage('Maven build') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+
         stage('Test') {
             steps {
                 echo "test stage done"
