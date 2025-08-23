@@ -1,0 +1,12 @@
+pipeline {
+    agent { label 'agent-delphi-node' }
+
+    stages {
+        stage('Verify Agent') {
+            steps {
+                bat 'echo Running on Delphi agent'
+                bat 'whoami'
+            }
+        }
+    }
+}
