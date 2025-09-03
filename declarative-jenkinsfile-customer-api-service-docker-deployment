@@ -24,7 +24,7 @@ pipeline {
                 bat '''
                     mkdir tmp_build
                     copy Linux64\\Release\\%BINARY_NAME% tmp_build\\
-                    copy Dockerfile tmp_build\\
+                    copy dockerfile tmp_build\\
                 '''
 
                 // Stash the compiled binary and Dockerfile
