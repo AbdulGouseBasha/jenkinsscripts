@@ -35,7 +35,7 @@ pipeline {
         }
 
         stage('Build Docker Image and Run Container (Linux Controller)') {
-            agent { label 'linux' } // or 'master' if Jenkins controller runs jobs
+            agent { label 'master' } // or 'master' if Jenkins controller runs jobs
 
             steps {
                 // Restore stashed binary + Dockerfile
