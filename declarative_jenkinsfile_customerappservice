@@ -23,7 +23,7 @@ pipeline {
 
         stage('List Output') {
             steps {
-                bat 'dir /s /b *.exe'
+                bat 'dir /s /b *CustomerAPIService'
             }
         }
     }
