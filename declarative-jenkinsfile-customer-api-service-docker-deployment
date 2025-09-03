@@ -1,36 +1,67 @@
 pipeline {
-    agent { label 'agent-delphi-node' }  // Replace with your agent label
+    agent none // We'll define agents per stage
 
     environment {
-        //MSBUILD = '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin\\MSBuild.exe"'  // Adjust path as needed
-         RS_VARS = '"C:\\Program Files (x86)\\Embarcadero\\Studio\\22.0\\bin\\rsvars.bat"'
+        RS_VARS = '"C:\\Program Files (x86)\\Embarcadero\\Studio\\22.0\\bin\\rsvars.bat"'
+        IMAGE_NAME = 'image-customer-api-service'
+        CONTAINER_NAME = 'container-customer-api-service'
+        BINARY_NAME = 'CustomerAPIService'
+        STASH_NAME = 'binary-and-dockerfile'
     }
 
     stages {
-        stage('Checkout Source Code') {
+        stage('Checkout and Build (Windows Delphi Agent)') {
+            agent { label 'agent-delphi-node' }
+
             steps {
+                // Get source code
                 git branch: 'main', url: 'https://github.com/AbdulGouseBasha/CustomerAPIService.git'
-            }
-        }
 
-        stage('Build Delphi Project') {
-            steps {
-                //bat "${env.MSBUILD} Jenkins_Console_Test.dproj /p:Config=Release /p:Platform=Win32"
-                // Chain rsvars.bat and MSBuild together in one bat call
+                // Compile Linux64 binary
                 bat "${env.RS_VARS} && msbuild CustomerAPIService.dproj /p:Config=Release /p:Platform=Linux64"
+
+                // Copy binary and Dockerfile to a temp folder
+                bat '''
+                    mkdir tmp_build
+                    copy Linux64\\Release\\%BINARY_NAME% tmp_build\\
+                    copy Dockerfile tmp_build\\
+                '''
+
+                // Stash the compiled binary and Dockerfile
+                dir('tmp_build') {
+                    stash includes: '**/*', name: "${STASH_NAME}"
+                }
             }
         }
 
-        stage('List Executable') {
+        stage('Build Docker Image and Run Container (Linux Controller)') {
+            agent { label 'linux' } // or 'master' if Jenkins controller runs jobs
+
             steps {
-                bat 'dir /s /b *CustomerAPIService'
+                // Restore stashed binary + Dockerfile
+                unstash "${STASH_NAME}"
+
+                // Ensure binary is executable (in case it's not)
+                sh "chmod +x ${BINARY_NAME}"
+
+                // Build Docker image
+                sh "docker build -t ${IMAGE_NAME} ."
+
+                // Clean up old container if it exists
+                sh "docker rm -f ${CONTAINER_NAME} || true"
+
+                // Run the new container
+                sh "docker run -d -p 8081:8080 --name ${CONTAINER_NAME} ${IMAGE_NAME}"
             }
         }
     }
 
     post {
         success {
-            archiveArtifacts artifacts: '**/CustomerAPIService', allowEmptyArchive: true
+            echo '✅ Application container started successfully on the Linux controller.'
+        }
+        failure {
+            echo '❌ Pipeline failed.'
         }
     }
 }
