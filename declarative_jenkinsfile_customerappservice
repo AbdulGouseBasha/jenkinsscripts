@@ -21,7 +21,7 @@ pipeline {
             }
         }
 
-        stage('List Output') {
+        stage('List Executable') {
             steps {
                 bat 'dir /s /b *CustomerAPIService'
             }
